@@ -33,23 +33,17 @@ async function startBot() {
     }
 
     try {
-      const response = await openai.createChatCompletion({
+      const response = await openai.chat.completions.create({
         model: 'gpt-3.5-turbo',
         messages: [{ role: 'user', content: sanitizedInput }],
       });
 
-      if (!response.data || !response.data.choices || !response.data.choices[0]?.message?.content) {
-        console.error('Unexpected OpenAI response structure:', response);
-        await sock.sendMessage(from, { text: 'Sorry, I had an error processing that.' });
-        return;
-      }
-
-      const reply = response.data.choices[0].message.content.trim();
+      const reply = response.choices[0].message.content.trim();
       await sock.sendMessage(from, { text: reply });
       console.log(`Replied: ${reply}`);
     } catch (err) {
       console.error('OpenAI error:', err);
-      await sock.sendMessage(from, { text: 'Sorry, I had an error processing that.' });
+      await sock.sendMessage(from, { text: 'Sorry, I had an error processing that reply.' });
     }
   });
 
