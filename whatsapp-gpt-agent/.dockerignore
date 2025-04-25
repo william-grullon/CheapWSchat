@@ -1,0 +1,6 @@
+node_modules
+npm-debug.log
+.env
+auth_info/
+*.json
+.DS_Store
