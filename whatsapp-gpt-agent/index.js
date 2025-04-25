@@ -25,11 +25,24 @@ async function startBot() {
 
     console.log(`Received: ${incoming}`);
 
+    const sanitizedInput = incoming?.trim();
+    if (!sanitizedInput) {
+      console.error('Invalid input message:', incoming);
+      await sock.sendMessage(from, { text: 'Sorry, I could not process your message.' });
+      return;
+    }
+
     try {
       const response = await openai.createChatCompletion({
         model: 'gpt-3.5-turbo',
-        messages: [{ role: 'user', content: incoming }],
+        messages: [{ role: 'user', content: sanitizedInput }],
       });
+
+      if (!response.data || !response.data.choices || !response.data.choices[0]?.message?.content) {
+        console.error('Unexpected OpenAI response structure:', response);
+        await sock.sendMessage(from, { text: 'Sorry, I had an error processing that.' });
+        return;
+      }
 
       const reply = response.data.choices[0].message.content.trim();
       await sock.sendMessage(from, { text: reply });
