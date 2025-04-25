@@ -2,5 +2,6 @@
 node_modules/
 auth_info/
 package-lock.json
+.DS_Store
 # environment variables
 .env
