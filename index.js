@@ -16,6 +16,9 @@ async function startBot() {
 
   sock.ev.on('creds.update', saveCreds);
 
+  // Add a queue to store the last 5 messages
+  const lastMessages = [];
+
   sock.ev.on('messages.upsert', async ({ messages }) => {
     const msg = messages[0];
     if (!msg.message || msg.key.fromMe) return;
@@ -24,6 +27,15 @@ async function startBot() {
     const incoming = msg.message.conversation || msg.message.extendedTextMessage?.text;
 
     console.log(`Received: ${incoming}`);
+
+    // Add the incoming message to the queue
+    if (incoming) {
+      lastMessages.push(incoming);
+      if (lastMessages.length > 5) {
+        lastMessages.shift(); // Remove the oldest message if the queue exceeds 5
+      }
+      console.log('Last 5 messages:', lastMessages);
+    }
 
     const sanitizedInput = incoming?.trim();
     if (!sanitizedInput) {
@@ -35,7 +47,17 @@ async function startBot() {
     try {
       const response = await openai.chat.completions.create({
         model: 'gpt-3.5-turbo',
-        messages: [{ role: 'user', content: sanitizedInput }],
+        messages: [
+          { role: 'system', content: 'You are a friendly assitant.' },
+          { role: 'user', content: 'You are a WhatsApp bot.' },
+          { role: 'user', content: 'You are a chatbot that can answer questions.' },
+          { role: 'user', content: 'You are a chatbot that can answer questions about the weather.' },
+          { role: 'user', content: 'You are a chatbot that can answer questions about the news.' },
+          { role: 'user', content: 'You are a chatbot that can answer questions about places.' },
+          { role: 'user', content: 'You are a chatbot that can answer questions about technology.' },
+          { role: 'user', content: 'You are a chatbot that can answer questions about science.' },  
+          { role: 'user', content: sanitizedInput },
+        ],
       });
 
       const reply = response.choices[0].message.content.trim();
